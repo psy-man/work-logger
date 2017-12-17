@@ -1,0 +1,12 @@
+{
+  "name": "WT-Logger",
+  "version": "1.0.0",
+  "main": "electron.conf.js",
+  "dependencies": {
+    "jira-client": "^6.4.1",
+    "node-schedule": "^1.2.5",
+    "gmail-send": "^1.2.11",
+    "bluebird": "^3.5.1",
+    "request": "^2.83.0"
+  }
+}

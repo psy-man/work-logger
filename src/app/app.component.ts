@@ -1,10 +1,137 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit, ViewEncapsulation } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ElectronService } from 'ngx-electron';
+import { MatDialog } from '@angular/material';
+
+import { ResponseDialogComponent } from './response-dialog/response-dialog.component';
+import { WorkLog } from './shared/models/work-log.interface';
+import { Task } from './shared/models/task.interface';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: [
+    './app.component.scss'
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './app.component.html'
 })
-export class AppComponent {
-  title = 'app';
+export class AppComponent implements OnInit {
+  public form: FormGroup;
+  public showMessageInput = false;
+  public sending = false;
+
+  constructor(public fb: FormBuilder,
+              private electron: ElectronService,
+              private ngZone: NgZone,
+              private changeDetectorRef: ChangeDetectorRef,
+              public dialog: MatDialog) {
+  }
+
+  public ngOnInit() {
+    this.electron.ipcRenderer.removeAllListeners('reminder');
+    this.electron.ipcRenderer.removeAllListeners('submit-reply');
+
+    this.electron.ipcRenderer.on('submit-reply', (event, arg) => {
+      this.ngZone.run(() => {
+        this.sending = false;
+        this.initForm();
+
+        this.dialog.open(ResponseDialogComponent, {
+          width: '80%',
+          height: '80%',
+          data: {
+            response: JSON.stringify(arg, null, 4)
+          }
+        });
+
+        this.changeDetectorRef.detectChanges();
+      });
+    });
+
+    this.electron.ipcRenderer.on('reminder', (event, arg) => {
+      this.ngZone.run(() => {
+        const myNotification = new Notification('Reminder', {
+          body: 'Please send your work logs'
+        });
+      });
+    });
+
+    this.initForm();
+
+    this.changeDetectorRef.detectChanges();
+  }
+
+  get tasksControls() {
+    return this.form.controls['tasks']['controls'];
+  }
+
+  get totalTime(): number {
+    const tasks = this.form.value.tasks;
+    let total = 0;
+
+    tasks.forEach((task: Task) => {
+      task.workLogs.forEach((workLog: WorkLog) => {
+        total += Number(workLog.time);
+      });
+    });
+
+    return total;
+  }
+
+  public addClientTask(clientTaskId: string = ''): void {
+    const control = this.form.controls['tasks'] as FormArray;
+    const task = this.initTask(clientTaskId);
+
+    control.push(task);
+  }
+
+  public removeTask(i: number): void {
+    const control = this.form.controls['tasks'] as FormArray;
+    control.removeAt(i);
+  }
+
+  public addWorkLog(control: FormArray): void {
+    const workLogs = control.get('workLogs') as FormArray;
+
+    workLogs.push(this.initWorkLog());
+  }
+
+  public toggleMessageInput() {
+    this.showMessageInput = !this.showMessageInput;
+  }
+
+  public onSubmit(model: AbstractControl): void {
+    if (this.electron.isElectronApp) {
+      this.sending = true;
+      this.electron.ipcRenderer.send('submit', model.value);
+    }
+  }
+
+  private initForm() {
+    this.form = this.fb.group({
+      message: [''],
+      tasks: this.fb.array([])
+    });
+
+    this.addClientTask();
+    this.showMessageInput = false;
+  }
+
+  private initTask(clientTaskId: string = ''): FormGroup {
+    return this.fb.group({
+      id: [clientTaskId, [Validators.required]],
+      workLogs: this.fb.array([
+        this.initWorkLog()
+      ])
+    });
+  }
+
+  private initWorkLog(): FormGroup {
+    return this.fb.group({
+      id: [''],
+      description: ['', [Validators.required]],
+      time: ['', [Validators.required]]
+    });
+  }
 }

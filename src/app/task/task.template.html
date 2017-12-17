@@ -1,0 +1,14 @@
+<div [formGroup]="taskGroup">
+  <div formArrayName="workLogs">
+    <div *ngFor="let workLog of workLogsControls; let i=index">
+      <div [formGroupName]="i">
+        <app-work-log
+          [index]="i"
+          [removable]="workLogsControls.length > 1"
+          [workLogGroup]="workLog"
+          (removeWorkLogEvent)="removeWorkLog($event)"
+        ></app-work-log>
+      </div>
+    </div>
+  </div>
+</div>

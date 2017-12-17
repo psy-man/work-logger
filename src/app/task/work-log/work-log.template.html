@@ -1,0 +1,24 @@
+<table [formGroup]="workLogGroup" class="full-width">
+  <tr>
+    <td width="150">
+      <mat-form-field class="full-width">
+        <input matInput placeholder="External Task ID" formControlName="id">
+      </mat-form-field>
+    </td>
+    <td>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Description" formControlName="description">
+      </mat-form-field>
+    </td>
+    <td width="70">
+      <mat-form-field class="full-width">
+        <input matInput type="number" placeholder="hours" formControlName="time">
+      </mat-form-field>
+    </td>
+    <td width="40" *ngIf="removable">
+      <button mat-icon-button color="warn" (click)="removeWorkLog()" >
+        <mat-icon class="mat-24">clear</mat-icon>
+      </button>
+    </td>
+  </tr>
+</table>

@@ -1,0 +1,100 @@
+body {
+  background-color: rgba(0, 0, 0, .1);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+
+.mat-raised-button[disabled][disabled][disabled] {
+  background-color: #fff;
+}
+
+form {
+  padding-bottom: 70px;
+}
+
+#overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, .8);
+}
+
+.add-task {
+  padding-bottom: 10px;
+}
+
+#bottom-menu {
+  position: fixed;
+  box-sizing: border-box;
+
+  width: 100%;
+  padding: 15px;
+
+  left: 0;
+  bottom: 0;
+
+  background-color: #323232;
+
+  color: #ffffff;
+}
+
+.done {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  color: white;
+}
+
+mat-card {
+  margin-bottom: 15px;
+  padding: 10px !important;
+
+  .mat-card-header-text {
+    width: 100%;
+  }
+
+  .mat-card-subtitle, .mat-card-title {
+    margin-bottom: 5px;
+  }
+}
+
+mat-select {
+  padding: 0 !important;
+}
+
+mat-slide-toggle {
+  float: left;
+}
+
+mat-dialog-container {
+  h2.mat-dialog-title {
+    margin-bottom: 0;
+  }
+  pre {
+    background-color: rgba(0, 0, 0, .1);
+    padding: 10px;
+  }
+
+  mat-dialog-actions {
+    > div {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
+
+
