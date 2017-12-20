@@ -9,6 +9,7 @@ import { TaskComponent } from './task/task.component';
 import { WorkLogComponent } from './task/work-log/work-log.component';
 import { ResponseDialogComponent } from './response-dialog/response-dialog.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatAutocompleteModule} from '@angular/material';
 
 
 @NgModule({
@@ -19,6 +20,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     ReactiveFormsModule,
     MaterialModule,
     NgxElectronModule,
+    MatAutocompleteModule
   ],
   providers: [],
   bootstrap: [AppComponent],

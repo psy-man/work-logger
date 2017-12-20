@@ -84,6 +84,10 @@ async function onSubmit (event, arg) {
   })
 }
 
+async function findIssue (event, arg) {
+  const response = await jira.getUsersIssues('eugene.filipyev');
+  event.sender.send('findIssue', response);
+}
 
 function hoursToSeconds(hours) {
   return Number(hours) * 60 * 60;
@@ -91,3 +95,4 @@ function hoursToSeconds(hours) {
 
 
 module.exports.onSubmit = onSubmit;
+module.exports.findIssue = findIssue;

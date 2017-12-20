@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit, ViewEncapsulation } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import { ElectronService } from 'ngx-electron';
 import { MatDialog } from '@angular/material';
 
 import { ResponseDialogComponent } from './response-dialog/response-dialog.component';
 import { WorkLog } from './shared/models/work-log.interface';
 import { Task } from './shared/models/task.interface';
+import {map, startWith} from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -19,18 +20,30 @@ import { Task } from './shared/models/task.interface';
 export class AppComponent implements OnInit {
   public form: FormGroup;
   public showMessageInput = false;
-  public sending = false;
+  public sending = true;
+
+  public stateCtrl: FormControl;
+  public filteredStates: any;
+  public states = [];
 
   constructor(public fb: FormBuilder,
               private electron: ElectronService,
               private ngZone: NgZone,
               private changeDetectorRef: ChangeDetectorRef,
               public dialog: MatDialog) {
+    this.stateCtrl = new FormControl('', [Validators.required]);
+
+    this.filteredStates = this.stateCtrl.valueChanges
+      .pipe(
+        startWith(null),
+        map((state) => state ? this.filterStates(state) : this.states.slice())
+      );
   }
 
   public ngOnInit() {
     this.electron.ipcRenderer.removeAllListeners('reminder');
     this.electron.ipcRenderer.removeAllListeners('submit-reply');
+    this.electron.ipcRenderer.removeAllListeners('findIssue');
 
     this.electron.ipcRenderer.on('submit-reply', (event, arg) => {
       this.ngZone.run(() => {
@@ -45,7 +58,7 @@ export class AppComponent implements OnInit {
           }
         });
 
-        this.changeDetectorRef.detectChanges();
+        this.changeDetectorRef.markForCheck();
       });
     });
 
@@ -57,8 +70,24 @@ export class AppComponent implements OnInit {
       });
     });
 
+    this.electron.ipcRenderer.on('findIssue', (event, list) => {
+      this.ngZone.run(() => {
+        this.states = list.issues
+          .filter(({key}) => !key.includes('TCM-'))
+          .map(({key, fields}) => {
+            return {
+              key, title: fields.summary
+            };
+          });
+        this.sending = false;
+
+        this.changeDetectorRef.markForCheck();
+      });
+    });
+
     this.initForm();
 
+    this.electron.ipcRenderer.send('findIssue');
     this.changeDetectorRef.detectChanges();
   }
 
@@ -79,11 +108,14 @@ export class AppComponent implements OnInit {
     return total;
   }
 
-  public addClientTask(clientTaskId: string = ''): void {
+  public addClientTask(issueId): void {
+    const issue = this.states.find((i) => i.key === issueId);
+
     const control = this.form.controls['tasks'] as FormArray;
-    const task = this.initTask(clientTaskId);
+    const task = this.initTask(issue);
 
     control.push(task);
+    this.stateCtrl.reset();
   }
 
   public removeTask(i: number): void {
@@ -108,19 +140,26 @@ export class AppComponent implements OnInit {
     }
   }
 
+  private filterStates(name: string) {
+    return this.states.filter((state) =>
+      state.key.toLowerCase().includes(name.toLowerCase()) ||
+      state.title.toLowerCase().includes(name.toLowerCase()));
+  }
+
   private initForm() {
     this.form = this.fb.group({
       message: [''],
       tasks: this.fb.array([])
     });
 
-    this.addClientTask();
+    // this.addClientTask();
     this.showMessageInput = false;
   }
 
-  private initTask(clientTaskId: string = ''): FormGroup {
+  private initTask(issue): FormGroup {
     return this.fb.group({
-      id: [clientTaskId, [Validators.required]],
+      id: [issue.key, [Validators.required]],
+      name: [issue.title],
       workLogs: this.fb.array([
         this.initWorkLog()
       ])

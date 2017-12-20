@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import {
+  MatAutocompleteModule,
   MatButtonModule, MatCardModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule,
   MatSelectModule,
   MatSlideToggleModule
@@ -14,7 +15,8 @@ const modules = [
   MatSelectModule,
   MatSlideToggleModule,
   MatDialogModule,
-  MatFormFieldModule
+  MatFormFieldModule,
+  MatAutocompleteModule
 ];
 
 @NgModule({

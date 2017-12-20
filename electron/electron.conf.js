@@ -1,6 +1,6 @@
 const {app, BrowserWindow, ipcMain, Menu} = require('electron');
 const schedule = require('node-schedule');
-// const {onSubmit} = require('./server');
+const {onSubmit, findIssue} = require('./server');
 const url = require('url');
 const path = require('path');
 
@@ -17,7 +17,7 @@ function createWindow() {
   });
 
   if (isDev) {
-    win.loadURL('http://localhost:4000');
+    win.loadURL('http://localhost:4200');
     win.webContents.openDevTools();
   } else {
     win.loadURL(url.format({
@@ -66,7 +66,8 @@ app.on('window-all-closed', () => {
   }
 });
 
-// ipcMain.on('submit', onSubmit);
+ipcMain.on('submit', onSubmit);
+ipcMain.on('findIssue', findIssue);
 
 const reminder = schedule.scheduleJob('00 18 * * *', function() {
   win.webContents.send('reminder');

@@ -8,9 +8,7 @@
               <table class="full-width">
                 <tr>
                   <td>
-                    <mat-form-field class="full-width">
-                      <input matInput placeholder="Windmill Task ID" formControlName="id">
-                    </mat-form-field>
+                    <b>{{ task.get('id').value }}:</b> {{ task.get('name').value }}
                   </td>
                   <td width="30">
                     <button type="button" mat-icon-button (click)="addWorkLog(task)">
@@ -34,17 +32,27 @@
     </div>
   </div>
 
+  <div class="add-task text-center">
+    <mat-form-field style="width: 400px">
+      <input matInput #findIssueInput placeholder="State" aria-label="State" [matAutocomplete]="auto" [formControl]="stateCtrl">
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngFor="let state of filteredStates | async" [value]="state.key">
+          <span>{{ state.key }}</span> |
+          <small>{{ state.title }}</small>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <button type="button" mat-raised-button color="primary" (click)="addClientTask(findIssueInput.value)" [disabled]="stateCtrl.invalid">
+      Add task
+    </button>
+  </div>
+
   <mat-card *ngIf="showMessageInput">
     <mat-form-field class="full-width">
       <textarea matInput placeholder="Message" formControlName="message" rows="4"></textarea>
     </mat-form-field>
   </mat-card>
-
-  <div class="done">
-    <button type="button"  mat-fab color="primary" (click)="addClientTask()">
-      <mat-icon class="md-24">add</mat-icon>
-    </button>
-  </div>
 
   <div id="bottom-menu" class="text-center">
     <table width="100%">
@@ -55,7 +63,7 @@
           </mat-slide-toggle>
         </td>
         <td class="text-center">
-          <button mat-raised-button color="accent" type="submit" [disabled]="form.invalid">
+          <button mat-raised-button color="accent" type="submit" [disabled]="form.invalid || tasksControls.length === 0">
             Submit
           </button>
         </td>
