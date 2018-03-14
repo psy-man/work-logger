@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit, ViewEncapsulation } from '@angular/core';
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import { ElectronService } from 'ngx-electron';
-import { MatDialog } from '@angular/material';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit, ViewEncapsulation} from '@angular/core';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {ElectronService} from 'ngx-electron';
+import {MatDialog} from '@angular/material';
 
-import { ResponseDialogComponent } from './response-dialog/response-dialog.component';
-import { WorkLog } from './shared/models/work-log.interface';
-import { Task } from './shared/models/task.interface';
+import {ResponseDialogComponent} from './response-dialog/response-dialog.component';
+import {WorkLog} from './shared/models/work-log.interface';
+import {Task} from './shared/models/task.interface';
 import {map, startWith} from 'rxjs/operators';
 
 @Component({
@@ -24,7 +24,24 @@ export class AppComponent implements OnInit {
 
   public stateCtrl: FormControl;
   public filteredStates: any;
-  public states = [];
+  public issues = [
+    {
+      'key': 'MYL-259',
+      'title': 'MyLO Hybrid'
+    },
+    {
+      'key': 'WMINT-7',
+      'title': 'Research. Self education'
+    },
+    {
+      'key': 'WMINT-34',
+      'title': 'Helping in recruitment- JD screening, taking Interviews and others'
+    },
+    {
+      'key': 'WMINT-4',
+      'title': 'Holidays'
+    }
+  ];
 
   constructor(public fb: FormBuilder,
               private electron: ElectronService,
@@ -36,7 +53,7 @@ export class AppComponent implements OnInit {
     this.filteredStates = this.stateCtrl.valueChanges
       .pipe(
         startWith(null),
-        map((state) => state ? this.filterStates(state) : this.states.slice())
+        map((state) => state ? this.filterStates(state) : this.issues.slice())
       );
   }
 
@@ -62,23 +79,24 @@ export class AppComponent implements OnInit {
       });
     });
 
-    this.electron.ipcRenderer.on('reminder', (event, arg) => {
+    this.electron.ipcRenderer.on('reminder', () => {
       this.ngZone.run(() => {
         const myNotification = new Notification('Reminder', {
           body: 'Please send your work logs'
         });
+        console.log(myNotification);
       });
     });
 
     this.electron.ipcRenderer.on('findIssue', (event, list) => {
       this.ngZone.run(() => {
-        this.states = list.issues
+        this.issues.push(...list.issues
           .filter(({key}) => !key.includes('TCM-'))
           .map(({key, fields}) => {
             return {
               key, title: fields.summary
             };
-          });
+          }));
         this.sending = false;
 
         this.changeDetectorRef.markForCheck();
@@ -109,7 +127,7 @@ export class AppComponent implements OnInit {
   }
 
   public addClientTask(issueId): void {
-    const issue = this.states.find((i) => i.key === issueId);
+    const issue = this.issues.find((i) => i.key === issueId);
 
     const control = this.form.controls['tasks'] as FormArray;
     const task = this.initTask(issue);
@@ -141,7 +159,7 @@ export class AppComponent implements OnInit {
   }
 
   private filterStates(name: string) {
-    return this.states.filter((state) =>
+    return this.issues.filter((state) =>
       state.key.toLowerCase().includes(name.toLowerCase()) ||
       state.title.toLowerCase().includes(name.toLowerCase()));
   }
@@ -152,7 +170,7 @@ export class AppComponent implements OnInit {
       tasks: this.fb.array([])
     });
 
-    // this.addClientTask();
+    this.issues.forEach(i => this.addClientTask(i.key));
     this.showMessageInput = false;
   }
 
