@@ -24,24 +24,12 @@ export class AppComponent implements OnInit {
 
   public stateCtrl: FormControl;
   public filteredStates: any;
-  public issues = [
-    {
-      'key': 'MYL-259',
-      'title': 'MyLO Hybrid'
-    },
-    {
-      'key': 'WMINT-7',
-      'title': 'Research. Self education'
-    },
-    {
-      'key': 'WMINT-34',
-      'title': 'Helping in recruitment- JD screening, taking Interviews and others'
-    },
-    {
-      'key': 'WMINT-4',
-      'title': 'Holidays'
-    }
-  ];
+  public issues = [];
+
+  public staticTaskForm = this.fb.group({
+    key: ['', [Validators.required]],
+    title: ['', [Validators.required]]
+  });
 
   constructor(public fb: FormBuilder,
               private electron: ElectronService,
@@ -126,14 +114,21 @@ export class AppComponent implements OnInit {
     return total;
   }
 
-  public addClientTask(issueId): void {
-    const issue = this.issues.find((i) => i.key === issueId);
+  public addClientTask(issueId = null): void {
+    let issue;
+
+    if (issueId) {
+      issue = this.issues.find((i) => i.key === issueId);
+      this.stateCtrl.reset();
+    } else {
+      issue = this.staticTaskForm.value;
+      this.staticTaskForm.reset();
+    }
 
     const control = this.form.controls['tasks'] as FormArray;
     const task = this.initTask(issue);
 
     control.push(task);
-    this.stateCtrl.reset();
   }
 
   public removeTask(i: number): void {

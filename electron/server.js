@@ -85,7 +85,7 @@ async function onSubmit (event, arg) {
 }
 
 async function findIssue (event, arg) {
-  const response = await jira.getUsersIssues('eugene.filipyev');
+  const response = await jira.searchJira('assignee in (currentUser()) ORDER BY updated DESC, lastViewed ASC', {maxResults: 200});
   event.sender.send('findIssue', response);
 }
 

@@ -34,7 +34,7 @@
 
   <div class="add-task text-center">
     <mat-form-field style="width: 400px">
-      <input matInput #findIssueInput placeholder="State" aria-label="State" [matAutocomplete]="auto" [formControl]="stateCtrl">
+      <input matInput #findIssueInput placeholder="Task from Jira" [matAutocomplete]="auto" [formControl]="stateCtrl">
       <mat-autocomplete #auto="matAutocomplete">
         <mat-option *ngFor="let state of filteredStates | async" [value]="state.key">
           <span>{{ state.key }}</span> |
@@ -44,6 +44,20 @@
     </mat-form-field>
 
     <button type="button" mat-raised-button color="primary" (click)="addClientTask(findIssueInput.value)" [disabled]="stateCtrl.invalid">
+      Add task
+    </button>
+  </div>
+
+  <div class="add-task text-center" [formGroup]="staticTaskForm">
+    <mat-form-field style="width: 100px; display: inline-block;">
+      <input matInput placeholder="ID" formControlName="key">
+    </mat-form-field>
+
+    <mat-form-field style="width: 300px; display: inline-block;">
+      <input matInput placeholder="Title" formControlName="title">
+    </mat-form-field>
+
+    <button type="button" mat-raised-button color="primary" (click)="addClientTask()" [disabled]="staticTaskForm.invalid">
       Add task
     </button>
   </div>
