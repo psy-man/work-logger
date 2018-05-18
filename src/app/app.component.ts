@@ -46,7 +46,6 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit() {
-    this.electron.ipcRenderer.removeAllListeners('reminder');
     this.electron.ipcRenderer.removeAllListeners('submit-reply');
     this.electron.ipcRenderer.removeAllListeners('findIssue');
 
@@ -64,15 +63,6 @@ export class AppComponent implements OnInit {
         });
 
         this.changeDetectorRef.markForCheck();
-      });
-    });
-
-    this.electron.ipcRenderer.on('reminder', () => {
-      this.ngZone.run(() => {
-        const myNotification = new Notification('Reminder', {
-          body: 'Please send your work logs'
-        });
-        console.log(myNotification);
       });
     });
 

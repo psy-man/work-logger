@@ -16,7 +16,7 @@ const sendMessage = Bluebird.promisify(require('gmail-send')({
   user: config.email.username,
   pass: config.email.password,
   from: config.email.from,
-  to:   config.email.recipient,
+  to: config.email.recipient,
   subject: 'Report'
 }));
 
@@ -27,7 +27,7 @@ const mailTemplate = `
 ##WORKLOGS##
 Spent: ##HOURS##h`;
 
-async function onSubmit (event, arg) {
+async function onSubmit(event, arg) {
   const data = arg;
 
   let totalTime = 0;
@@ -84,9 +84,16 @@ async function onSubmit (event, arg) {
   })
 }
 
-async function findIssue (event, arg) {
-  const response = await jira.searchJira('assignee in (currentUser()) ORDER BY updated DESC, lastViewed ASC', {maxResults: 200});
-  event.sender.send('findIssue', response);
+async function findIssue(event) {
+  try {
+    const [my, wm] = await Promise.all([
+      jira.searchJira('assignee in (currentUser()) ORDER BY updated DESC, lastViewed ASC', {maxResults: 100}),
+      jira.searchJira('project=WMINT ORDER BY created ASC', {maxResults: 100})
+    ]);
+    event.sender.send('findIssue', {issues: [...my.issues, ...wm.issues]});
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 function hoursToSeconds(hours) {

@@ -68,7 +68,3 @@ app.on('window-all-closed', () => {
 
 ipcMain.on('submit', onSubmit);
 ipcMain.on('findIssue', findIssue);
-
-const reminder = schedule.scheduleJob('00 18 * * *', function() {
-  win.webContents.send('reminder');
-});
